@@ -33,7 +33,7 @@ type Options struct {
 func main() {
 	var opts Options
 	opts.Labels = make(map[string]string)
-	pflag.StringVarP(&opts.BucketName, "bucket-name", "b", "", "Name of the S3 bucket with ALB logs (required)")
+	pflag.StringVarP(&opts.BucketName, "bucket-name", "b", "", "Name of the S3 bucket with ALB and/or KafkaConnect logs (required)")
 	pflag.DurationVarP(&opts.WaitInterval, "wait", "w", 60*time.Second, "Interval to wait between runs")
 	pflag.StringVarP(&opts.LokiURL, "loki-url", "H", "", "URL to Loki API (required)")
 	pflag.StringVarP(&opts.LokiUser, "loki-user", "u", "", "User to use for Loki authentication")

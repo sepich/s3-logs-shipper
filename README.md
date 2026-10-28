@@ -87,11 +87,21 @@ It is possible to ship logs from ALB in aws account `A` to S3 bucket in account 
   ```
 - Multiple clusters in the same account are distinguished by `cluster-id` tag on ALB. Which could be added by [--default-tags](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.5/deploy/configurations/#controller-command-line-flags) option of aws-load-balancer-controller.
 
+### KafkaConnect logs
+MSK Connect worker logs are detected by S3 key, so the same bucket could hold ALB and KafkaConnect logs of multiple clusters:
+```
+<cluster>/<namespace>/<connector>/AWSLogs/<account-id>/KafkaConnectLogs/<region>/<connector-uuid>/<YYYY>/<MM>/<DD>/<YYYYMMDD>T<HHMM>Z_<rand>.log.gz
+```
+- `cluster`, `namespace`, `connector` labels are taken from the key prefix (set by KafkaConnectController), no AWS API calls are needed
+- Lines are shipped as is, without multiline merging, as multiple workers' lines are interleaved in the same file. Lines without timestamp (config dumps, stack traces) get the previous line timestamp +1ns, leading ones get the time from the filename
+- With `--format=json` lines are shipped as `{"line":"<raw>"}`, otherwise as is
+- Empty dir markers `.../AWSLogs/<account-id>/` are deleted
+
 ### Cli args
 ```bash
 $ docker run sepa/alb-logs-shipper -h
 Usage of ./alb-logs-shipper:
-  -b, --bucket-name string     Name of the S3 bucket with ALB logs (required)
+  -b, --bucket-name string     Name of the S3 bucket with ALB and/or KafkaConnect logs (required)
   -o, --format string          Format to parse and ship log lines as (logfmt, json, raw) (default "raw")
   -l, --label stringArray      Label to add to Loki stream, can be specified multiple times (key=value)
       --log-level string       Log level (info, debug) (default "info")

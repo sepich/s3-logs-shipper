@@ -22,5 +22,5 @@ docker: ## Build docker image
 	@docker build --platform linux/amd64 -t alb-logs-shipper .
 
 push: ## Push docker image
-	docker tag alb-logs-shipper sepa/alb-logs-shipper
-	docker push sepa/alb-logs-shipper
+	docker tag alb-logs-shipper sepa/alb-logs-shipper:${VER}
+	docker push sepa/alb-logs-shipper:${VER}
