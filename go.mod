@@ -1,8 +1,6 @@
-module github.com/sepich/alb-logs-shipper
+module github.com/sepich/s3-logs-shipper
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.27
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.6

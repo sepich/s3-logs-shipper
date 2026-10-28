@@ -143,7 +143,7 @@ func (c *lokiClient) req(buf []byte) (int, error) {
 	}
 	// snappy-encoded protobufs over http by default.
 	req.Header.Set("Content-Type", "application/x-protobuf")
-	req.Header.Set("User-Agent", "alb-logs-shipper")
+	req.Header.Set("User-Agent", "s3-logs-shipper")
 
 	if c.LokiUser != "" && c.LokiPassword != "" {
 		req.SetBasicAuth(c.LokiUser, c.LokiPassword)

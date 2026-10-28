@@ -169,6 +169,6 @@ func (s *Parser) parseFile(ctx context.Context, fn string, src Source, labels ma
 func (s *Parser) metrics() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		fmt.Fprintf(w, "alb_logs_shipper_queue_length %d\n", len(s.queue))
+		fmt.Fprintf(w, "s3_logs_shipper_queue_length %d\n", len(s.queue))
 	})
 }

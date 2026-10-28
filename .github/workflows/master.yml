@@ -16,7 +16,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: sepa/alb-logs-shipper
+          images: sepa/s3-logs-shipper
           tags: |
             type=raw,value={{date 'YYMMDD'}}
             type=raw,value={{branch}}-{{sha}}

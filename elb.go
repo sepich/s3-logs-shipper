@@ -82,7 +82,7 @@ func (e *ELBMeta) client(accountID string) *elasticloadbalancingv2.Client {
 			sts.NewFromConfig(cfg),
 			e.roles[accountID],
 			func(o *stscreds.AssumeRoleOptions) {
-				o.RoleSessionName = "alb-logs-shipper"
+				o.RoleSessionName = "s3-logs-shipper"
 			},
 		)
 		cfg, err = config.LoadDefaultConfig(context.TODO(),

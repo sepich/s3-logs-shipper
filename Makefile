@@ -19,8 +19,8 @@ build: test ## Build binaries with version set
 	-X github.com/prometheus/common/version.BuildDate=`date +%Y/%m/%d-%H:%M:%SZ`"
 
 docker: ## Build docker image
-	@docker build --platform linux/amd64 -t alb-logs-shipper .
+	@docker build --platform linux/amd64 -t s3-logs-shipper .
 
 push: ## Push docker image
-	docker tag alb-logs-shipper sepa/alb-logs-shipper:${VER}
-	docker push sepa/alb-logs-shipper:${VER}
+	docker tag s3-logs-shipper sepa/s3-logs-shipper:${VER}
+	docker push sepa/s3-logs-shipper:${VER}

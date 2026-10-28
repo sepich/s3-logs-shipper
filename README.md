@@ -1,6 +1,6 @@
-# ALB Logs Shipper
+# S3 Logs Shipper
 
-Yet another ALB S3 logs shipper to Loki. This one mostly targeted for an EKS use case where ALB is dynamically created by `aws-load-balancer-controller`
+Yet another S3 logs shipper to Loki. Supports [ALB access logs](#how-it-works) and [MSK Connect worker logs](#kafkaconnect-logs). This one mostly targeted for an EKS use case where ALB is dynamically created by `aws-load-balancer-controller`
 
 ### How it works
 - You have a S3 bucket [with permissions for ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html#access-log-create-bucket) to write logs to
@@ -10,7 +10,7 @@ Yet another ALB S3 logs shipper to Loki. This one mostly targeted for an EKS use
   ```
   bucket[/prefix]/AWSLogs/aws-account-id/elasticloadbalancing/region/yyyy/mm/dd/aws-account-id_elasticloadbalancing_region_app.load-balancer-id_end-time_ip-address_random-string.log.gz
   ```
-- `alb-logs-shipper` start to list all files from `--bucket-name` and process only those matching the pattern above
+- `s3-logs-shipper` start to list all files from `--bucket-name` and process only those matching the pattern above
 - Based on `aws-account-id` and `load-balancer-id` in the filename it lazily reads (and caches) tag `ingress.k8s.aws/stack` from the corresponding ALB to get `ingress` and `namespace` labels. These labels are added to the log stream. That is why such IAM permissions are required:
   ```json
   {
@@ -24,8 +24,8 @@ Yet another ALB S3 logs shipper to Loki. This one mostly targeted for an EKS use
           "s3:DeleteObject"
         ],
         "Resource": [
-          "arn:aws:s3:::${aws_s3_bucket.alb_logs.id}",
-          "arn:aws:s3:::${aws_s3_bucket.alb_logs.id}/*"
+          "arn:aws:s3:::${aws_s3_bucket.logs.id}",
+          "arn:aws:s3:::${aws_s3_bucket.logs.id}/*"
         ]
       },
       {
@@ -45,7 +45,7 @@ Yet another ALB S3 logs shipper to Loki. This one mostly targeted for an EKS use
 ### Multicluster mode
 It is possible to ship logs from ALB in aws account `A` to S3 bucket in account `B`. So, in multicluster multiaccount setup it is possible to have the same annotation in Ingress objects to ship logs to the single S3 bucket. Note that ALB only ships to bucket in the same region, so it is bucket-per-region.
 - From log filename we can get source `account-id` and `loadbalancer-id`. But then, to get ALB tags, we need a list of IAM roles (`--role-arn`) to do `AssumeRole` for each account writing ALB logs to the bucket.
-- Additional IAM permissions are required on `alb-logs-shipper` (S3 bucket) side:
+- Additional IAM permissions are required on `s3-logs-shipper` (S3 bucket) side:
   ```json
   {
   "Version": "2012-10-17",
@@ -80,7 +80,7 @@ It is possible to ship logs from ALB in aws account `A` to S3 bucket in account 
       "Version": "2012-10-17",
       "Statement": [{
           "Effect": "Allow",
-          "Principal": {"AWS": "arn:aws:iam::<bucket-account-id>:role/<alb-logs-shipper-role>"},
+          "Principal": {"AWS": "arn:aws:iam::<bucket-account-id>:role/<s3-logs-shipper-role>"},
           "Action": "sts:AssumeRole"
       }]
   }
@@ -99,8 +99,8 @@ MSK Connect worker logs are detected by S3 key, so the same bucket could hold AL
 
 ### Cli args
 ```bash
-$ docker run sepa/alb-logs-shipper -h
-Usage of ./alb-logs-shipper:
+$ docker run sepa/s3-logs-shipper -h
+Usage of ./s3-logs-shipper:
   -b, --bucket-name string     Name of the S3 bucket with ALB and/or KafkaConnect logs (required)
   -o, --format string          Format to parse and ship log lines as (logfmt, json, raw) (default "raw")
   -l, --label stringArray      Label to add to Loki stream, can be specified multiple times (key=value)
@@ -140,12 +140,12 @@ BenchmarkLineRegex_AsJson-16               41798             28651 ns/op        
 BenchmarkLineSlice_AsLogfmt-16            496107              2536 ns/op            2584 B/op         22 allocs/op
 BenchmarkLineSlice_AsJson-16              414213              2915 ns/op            2392 B/op         19 allocs/op
 PASS
-ok      github.com/sepich/alb-logs-shipper      5.159s
+ok      github.com/sepich/s3-logs-shipper      5.159s
 ```
 
 ### TODO
 - The tag `ingress.k8s.aws/stack` is set to `namespace/ingressname` only for an implicit IngressGroup. When the IngressGroup is set on Ingress, there is no way to get ns/ingressname. Dynamic placeholders are not supported in `--default-tags` of alb controller. Need to use mutation for Ingress objects adding `alb.ingress.kubernetes.io/tags` annotation with ns/ingressname.
-- When alb-ingress is deleted, ALB is removed and then final logs appear later in S3. At this point, alb-shipper should use cached info to set the correct labels for logs. If alb-shipper was restarted after ALB is removed and before logs appear in S3, it has no way to get ALB tags anymore. To prevent data loss, it would exit with error instead of deleting the non-shipped logs. In this case, files should be reviewed and deleted manually:
+- When alb-ingress is deleted, ALB is removed and then final logs appear later in S3. At this point, the shipper should use cached info to set the correct labels for logs. If the shipper was restarted after ALB is removed and before logs appear in S3, it has no way to get ALB tags anymore. To prevent data loss, it would exit with error instead of deleting the non-shipped logs. In this case, files should be reviewed and deleted manually:
   ```
   level=error caller=parser.go:100 msg="failed to ship file" key=AWSLogs/1234567890/elasticloadbalancing/eu-central-1/2025/05/30/1234567890_elasticloadbalancing_eu-central-1_app.loadbalancer-id.614c0546c583b475_20250530T0825Z_10.1.1.1_4qhkaho9.log.gz err="failed to get metadata for load balancer 1234567890/loadbalancer-id: operation error Elastic Load Balancing v2: DescribeLoadBalancers, https response error StatusCode: 400, RequestID: b8e6c668-8209-420e-8941-22b66ff2e9b7, LoadBalancerNotFound: Load balancers '[loadbalancer-id]' not found"
   ```

@@ -46,7 +46,7 @@ func main() {
 	var ver = pflag.BoolP("version", "v", false, "Show version and exit")
 	pflag.Parse()
 	if *ver {
-		fmt.Println(version.Print("alb-logs-shipper"))
+		fmt.Println(version.Print("s3-logs-shipper"))
 		os.Exit(0)
 	}
 	logger := getLogger(*logLevel)
@@ -86,7 +86,7 @@ func main() {
 		roleMap[id[4]] = role
 	}
 
-	logger.Info("Starting alb-logs-shipper", "version", version.Version, "metrics-port", opts.Port)
+	logger.Info("Starting s3-logs-shipper", "version", version.Version, "metrics-port", opts.Port)
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		logger.Error("unable to load AWS SDK config", "err", err)

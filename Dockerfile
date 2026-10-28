@@ -1,10 +1,10 @@
-FROM golang:1.24 AS builder
+FROM golang:1.27 AS builder
 WORKDIR /app
 COPY go.* ./
 RUN go mod download
 COPY . .
 RUN make build
 
-FROM gcr.io/distroless/static-debian11:nonroot
-COPY --from=builder /app/alb-logs-shipper /alb-logs-shipper
-ENTRYPOINT ["/alb-logs-shipper"]
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=builder /app/s3-logs-shipper /s3-logs-shipper
+ENTRYPOINT ["/s3-logs-shipper"]
