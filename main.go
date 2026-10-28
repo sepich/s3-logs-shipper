@@ -39,7 +39,7 @@ func main() {
 	pflag.StringVarP(&opts.LokiUser, "loki-user", "u", "", "User to use for Loki authentication")
 	var logLevel = pflag.StringP("log-level", "", "info", "Log level (info, debug)")
 	pflag.StringVarP(&opts.Format, "format", "o", "raw", "Format to parse and ship log lines as (logfmt, json, raw)")
-	var labels = pflag.StringArrayP("label", "l", []string{}, "Label to add to Loki stream, can be specified multiple times (key=value)")
+	var labels = pflag.StringArrayP("label", "l", []string{}, "Label to add to all Loki streams, overrides source labels, empty value removes the label, can be specified multiple times (key=value)")
 	var roles = pflag.StringArrayP("role-arn", "a", []string{}, "ARN of the IAM role to assume to access ALB tags, can be specified multiple times")
 	pflag.IntVarP(&opts.Workers, "workers", "n", 4, "Number of workers to run")
 	pflag.IntVarP(&opts.Port, "port", "p", 8080, "Port to expose metrics on")
@@ -69,7 +69,7 @@ func main() {
 
 	for _, label := range *labels {
 		parts := strings.SplitN(label, "=", 2)
-		if len(parts) < 2 || len(parts[0]) == 0 || len(parts[1]) == 0 {
+		if len(parts) < 2 || len(parts[0]) == 0 {
 			logger.Error("invalid label format (k=v)", "label", label)
 			os.Exit(1)
 		}

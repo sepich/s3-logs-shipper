@@ -122,7 +122,11 @@ func (s *Parser) process(ctx context.Context, fn string) (bool, error) {
 func (s *Parser) parseFile(ctx context.Context, fn string, src Source, labels map[string]string) error {
 	start := time.Now()
 	for k, v := range s.opts.Labels {
-		labels[k] = v
+		if v == "" {
+			delete(labels, k)
+		} else {
+			labels[k] = v
+		}
 	}
 	b := newBatch(labels, s.opts, s.logger)
 

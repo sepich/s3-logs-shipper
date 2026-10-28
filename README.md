@@ -11,7 +11,7 @@ Yet another S3 logs shipper to Loki. Supports [ALB access logs](#how-it-works) a
   bucket[/prefix]/AWSLogs/aws-account-id/elasticloadbalancing/region/yyyy/mm/dd/aws-account-id_elasticloadbalancing_region_app.load-balancer-id_end-time_ip-address_random-string.log.gz
   ```
 - `s3-logs-shipper` start to list all files from `--bucket-name` and process only those matching the pattern above
-- Based on `aws-account-id` and `load-balancer-id` in the filename it lazily reads (and caches) tag `ingress.k8s.aws/stack` from the corresponding ALB to get `ingress` and `namespace` labels. These labels are added to the log stream. That is why such IAM permissions are required:
+- Based on `aws-account-id` and `load-balancer-id` in the filename it lazily reads (and caches) tag `ingress.k8s.aws/stack` from the corresponding ALB to get `ingress` and `namespace` labels. These labels, along with static `stream=alb`, are added to the log stream. That is why such IAM permissions are required:
   ```json
   {
     "Version": "2012-10-17",
@@ -92,7 +92,7 @@ MSK Connect worker logs are detected by S3 key, so the same bucket could hold AL
 ```
 <cluster>/<namespace>/<connector>/AWSLogs/<account-id>/KafkaConnectLogs/<region>/<connector-uuid>/<YYYY>/<MM>/<DD>/<YYYYMMDD>T<HHMM>Z_<rand>.log.gz
 ```
-- `cluster`, `namespace`, `connector` labels are taken from the key prefix (set by KafkaConnectController), no AWS API calls are needed
+- `cluster`, `namespace`, `connector` labels are taken from the key prefix (set by KafkaConnectController), plus static `stream=kcc`. No AWS API calls are needed
 - Lines are shipped as is, without multiline merging, as multiple workers' lines are interleaved in the same file. Lines without timestamp (config dumps, stack traces) get the previous line timestamp +1ns, leading ones get the time from the filename
 - With `--format=json` lines are shipped as `{"line":"<raw>"}`, otherwise as is
 - Empty dir markers `.../AWSLogs/<account-id>/` are deleted
@@ -103,7 +103,7 @@ $ docker run sepa/s3-logs-shipper -h
 Usage of ./s3-logs-shipper:
   -b, --bucket-name string     Name of the S3 bucket with ALB and/or KafkaConnect logs (required)
   -o, --format string          Format to parse and ship log lines as (logfmt, json, raw) (default "raw")
-  -l, --label stringArray      Label to add to Loki stream, can be specified multiple times (key=value)
+  -l, --label stringArray      Label to add to all Loki streams, overrides source labels, empty value removes the label, can be specified multiple times (key=value)
       --log-level string       Log level (info, debug) (default "info")
   -H, --loki-url string        URL to Loki API (required)
   -u, --loki-user string       User to use for Loki authentication

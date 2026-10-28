@@ -69,6 +69,7 @@ func (a *ALBSource) Labels(key string) (map[string]string, bool, error) {
 		return nil, true, fmt.Errorf("failed to get metadata for load balancer %s/%s: %w", accountID, lb, err)
 	}
 	labels := map[string]string{
+		"stream":    "alb",
 		"namespace": meta.Namespace,
 		"ingress":   meta.Ingress,
 	}

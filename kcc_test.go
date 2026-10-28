@@ -16,7 +16,7 @@ func TestKCCSource_Labels(t *testing.T) {
 		ok     bool
 	}{
 		{"log file", "eks-prod/ns-1/my.connector/AWSLogs/637423518893/KafkaConnectLogs/eu-west-1/976da346-5db5-437d-a65f-da4401162d11-2/2026/10/21/20261021T2135Z_934e9a4b.log.gz",
-			map[string]string{"cluster": "eks-prod", "namespace": "ns-1", "connector": "my.connector", "index": "eks-prod-ns-1"}, true},
+			map[string]string{"stream": "kcc", "cluster": "eks-prod", "namespace": "ns-1", "connector": "my.connector", "index": "eks-prod-ns-1"}, true},
 		{"dir marker", "eks-prod/ns-1/my.connector/AWSLogs/637423518893/", nil, false},
 		{"extra prefix", "x/eks-prod/ns-1/my.connector/AWSLogs/637423518893/KafkaConnectLogs/eu-west-1/976da346-2/2026/10/21/20261021T2135Z_934e9a4b.log.gz", nil, false},
 		{"alb log", "AWSLogs/123456789012/elasticloadbalancing/us-east-1/2022/01/24/123456789012_elasticloadbalancing_us-east-1_app.my-loadbalancer.b13ea9d19f16d015_20220124T0000Z_0.0.0.0_2et2e1mx.log.gz", nil, false},

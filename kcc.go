@@ -27,6 +27,7 @@ func (k *KCCSource) Labels(key string) (map[string]string, bool, error) {
 	}
 	cluster, namespace := matches[1], matches[2]
 	return map[string]string{
+		"stream":    "kcc",
 		"cluster":   cluster,
 		"namespace": namespace,
 		"connector": matches[3],
