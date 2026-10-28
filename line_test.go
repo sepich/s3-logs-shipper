@@ -55,6 +55,14 @@ func TestLineParser_As(t *testing.T) {
 			out:    `{"type":"h2","time":"2018-07-02T22:23:00.186641Z","elb":"app/my-loadbalancer/50dc6c495c0c9188","client":"10.0.1.252:48160","target":"10.0.0.66:9000","request_processing_time":0.000,"target_processing_time":0.002,"response_processing_time":0.000,"elb_status_code":200,"target_status_code":200,"received_bytes":5,"sent_bytes":257,"request":"GET https://10.0.2.105:773/ HTTP/2.0","user_agent":"user\"agent\" UpstreamClient(Apache-HttpClient/5.0.3 \\(Java/21.0.4\\))","ssl_cipher":"ECDHE-RSA-AES128-GCM-SHA256","ssl_protocol":"TLSv1.2","trace_id":"Root=1-58337327-72bd00b0343d75b906739c42","domain_name":"-","request_creation_time":"2018-07-02T22:22:48.364000Z","actions_executed":"redirect","redirect_url":"https://example.com:80/"}`,
 			err:    false,
 		},
+		{
+			name:   "http no target json",
+			format: "json",
+			in:     `http 2026-10-28T14:46:48.706218Z app/dataoffice-alb/3d73e0793cf922d2 18.116.101.220:49542 - -1 -1 -1 400 - 0 272 "- http://dataoffice-alb-2125356582.eu-west-1.elb.amazonaws.com:80- -" "-" - - - "-" "-" "-" - 2026-10-28T14:46:43.701000Z "-" "-" "-" "-" "-" "-" "-" -`,
+			ts:     time.Date(2026, time.October, 28, 14, 46, 48, 706218000, time.UTC),
+			out:    `{"type":"http","time":"2026-10-28T14:46:48.706218Z","elb":"app/dataoffice-alb/3d73e0793cf922d2","client":"18.116.101.220:49542","target":"-","request_processing_time":-1,"target_processing_time":-1,"response_processing_time":-1,"elb_status_code":400,"target_status_code":"-","received_bytes":0,"sent_bytes":272,"request":"- http://dataoffice-alb-2125356582.eu-west-1.elb.amazonaws.com:80- -","user_agent":"-","ssl_cipher":"-","ssl_protocol":"-","trace_id":"-","domain_name":"-","request_creation_time":"2026-10-28T14:46:43.701000Z","actions_executed":"-","redirect_url":"-"}`,
+			err:    false,
+		},
 	}
 
 	lr := &LineRegex{}

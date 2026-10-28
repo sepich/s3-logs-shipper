@@ -97,7 +97,7 @@ func LineAs(format, line string, matches []string) (*time.Time, string, error) {
 		}
 		if isJSON {
 			builder.WriteString(`"` + name + `":`)
-			if numFields[name] || quoteFields[name] {
+			if (numFields[name] && value != "-") || quoteFields[name] {
 				builder.WriteString(value)
 			} else {
 				builder.WriteString(`"` + value + `"`)
