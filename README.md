@@ -94,7 +94,6 @@ MSK Connect worker logs are detected by S3 key, so the same bucket could hold AL
 ```
 - `cluster`, `namespace`, `connector` labels are taken from the key prefix (set by KafkaConnectController), plus static `stream=kcc`. No AWS API calls are needed
 - Lines are shipped as is, without multiline merging, as multiple workers' lines are interleaved in the same file. Lines without timestamp (config dumps, stack traces) get the previous line timestamp +1ns, leading ones get the time from the filename
-- With `--format=json` lines are shipped as `{"line":"<raw>"}`, otherwise as is
 - Empty dir markers `.../AWSLogs/<account-id>/` are deleted
 
 ### Cli args
@@ -102,7 +101,7 @@ MSK Connect worker logs are detected by S3 key, so the same bucket could hold AL
 $ docker run sepa/s3-logs-shipper -h
 Usage of ./s3-logs-shipper:
   -b, --bucket-name string     Name of the S3 bucket with ALB and/or KafkaConnect logs (required)
-  -o, --format string          Format to parse and ship log lines as (logfmt, json, raw) (default "raw")
+  -o, --alb-format string      Format to parse and ship ALB log lines as (logfmt, json, raw) (default "raw")
   -l, --label stringArray      Label to add to all Loki streams, overrides source labels, empty value removes the label, can be specified multiple times (key=value)
       --log-level string       Log level (info, debug) (default "info")
   -H, --loki-url string        URL to Loki API (required)

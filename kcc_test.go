@@ -41,38 +41,31 @@ func TestKCCSource_Parse(t *testing.T) {
 	fileTs := time.Date(2026, 10, 21, 21, 35, 0, 0, time.UTC)
 	ts1 := time.Date(2026, 10, 21, 21, 37, 19, 62000000, time.UTC)
 	tests := []struct {
-		name   string
-		format string
-		in     string
-		out    []entry
+		name string
+		in   string
+		out  []entry
 	}{
-		{"single", "raw",
+		{"single",
 			"[Worker-0a14] [2026-10-21 21:37:19,062] INFO started (Foo:1)",
 			[]entry{{ts1, "[Worker-0a14] [2026-10-21 21:37:19,062] INFO started (Foo:1)"}}},
-		{"leading lines use file ts", "raw",
+		{"leading lines use file ts",
 			"[Worker-0a14] Waiting for DNS\n[Worker-0a14] DNS available\n[Worker-0a14] [2026-10-21 21:37:19,062] INFO started",
 			[]entry{{fileTs.Add(1), "[Worker-0a14] Waiting for DNS"}, {fileTs.Add(2), "[Worker-0a14] DNS available"}, {ts1, "[Worker-0a14] [2026-10-21 21:37:19,062] INFO started"}}},
-		{"interleaved workers", "raw",
+		{"interleaved workers",
 			"[Worker-0a14] [2026-10-21 21:37:19,062] INFO Config values:\n[Worker-0b30] Waiting for DNS\n[Worker-0a14] \ta = 1",
 			[]entry{{ts1, "[Worker-0a14] [2026-10-21 21:37:19,062] INFO Config values:"}, {ts1.Add(1), "[Worker-0b30] Waiting for DNS"}, {ts1.Add(2), "[Worker-0a14] \ta = 1"}}},
-		{"same ms after untimed lines", "raw",
+		{"same ms after untimed lines",
 			"[Worker-0a14] [2026-10-21 21:37:19,062] INFO Config values:\n[Worker-0a14] \ta = 1\n[Worker-0a14] [2026-10-21 21:37:19,062] INFO next\n[Worker-0a14] [2026-10-21 21:37:19,061] INFO earlier ms",
 			[]entry{{ts1, "[Worker-0a14] [2026-10-21 21:37:19,062] INFO Config values:"}, {ts1.Add(1), "[Worker-0a14] \ta = 1"}, {ts1.Add(2), "[Worker-0a14] [2026-10-21 21:37:19,062] INFO next"}, {ts1.Add(-time.Millisecond), "[Worker-0a14] [2026-10-21 21:37:19,061] INFO earlier ms"}}},
-		{"no worker prefix", "raw",
+		{"no worker prefix",
 			"[2026-10-21 21:37:19,062] INFO started",
 			[]entry{{ts1, "[2026-10-21 21:37:19,062] INFO started"}}},
-		{"json", "json",
-			"[Worker-0a14] [2026-10-21 21:37:19,062] INFO \"quoted\"\t1",
-			[]entry{{ts1, `{"line":"[Worker-0a14] [2026-10-21 21:37:19,062] INFO \"quoted\"\t1"}`}}},
-		{"json no html escape", "json",
-			"[Worker-0a14] java.lang.NoSuchMethodException: Foo.<init>() & more",
-			[]entry{{fileTs.Add(1), `{"line":"[Worker-0a14] java.lang.NoSuchMethodException: Foo.<init>() & more"}`}}},
-		{"empty", "raw", "", nil},
+		{"empty", "", nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var out []entry
-			err := (&KCCSource{format: tt.format}).Parse(key, bufio.NewScanner(strings.NewReader(tt.in)), func(ts time.Time, line string) error {
+			err := (&KCCSource{}).Parse(key, bufio.NewScanner(strings.NewReader(tt.in)), func(ts time.Time, line string) error {
 				out = append(out, entry{ts, line})
 				return nil
 			})

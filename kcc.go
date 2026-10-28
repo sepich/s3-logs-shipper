@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"path"
 	"regexp"
 	"strings"
@@ -14,9 +13,7 @@ import (
 var kccRegex = regexp.MustCompile(`^(?P<cluster>[^/]+)/(?P<namespace>[^/]+)/(?P<connector>[^/]+)/AWSLogs/\d{12}/KafkaConnectLogs/[^/]+/[^/]+/\d{4}/\d{2}/\d{2}/\d{8}T\d{4}Z_[^/]+\.log\.gz$`)
 
 // KCCSource ships MSK Connect worker logs, labels are taken from the key prefix set by KafkaConnectController
-type KCCSource struct {
-	format string
-}
+type KCCSource struct{}
 
 var _ Source = &KCCSource{}
 
@@ -48,22 +45,11 @@ func (k *KCCSource) Parse(key string, scanner *bufio.Scanner, emit func(time.Tim
 		} else {
 			ts = ts.Add(time.Nanosecond)
 		}
-		if err := emit(ts, k.as(line)); err != nil {
+		if err := emit(ts, line); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func (k *KCCSource) as(line string) string {
-	if k.format != "json" {
-		return line
-	}
-	var b strings.Builder
-	enc := json.NewEncoder(&b)
-	enc.SetEscapeHTML(false) // keep `<init>` searchable by line filters
-	_ = enc.Encode(map[string]string{"line": line})
-	return strings.TrimSuffix(b.String(), "\n")
 }
 
 // kccTime parses log4j timestamp in UTC: [Worker-0a14c4caf9f5b2e2e] [2026-10-21 21:37:19,062]

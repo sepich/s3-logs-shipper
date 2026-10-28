@@ -34,8 +34,8 @@ func NewParser(opts Options, elbMeta *ELBMeta, s3Client *s3.Client, logger *slog
 	parser := &Parser{
 		opts: opts,
 		sources: []Source{
-			&ALBSource{meta: elbMeta, line: &LineSlice{}, format: opts.Format},
-			&KCCSource{format: opts.Format},
+			&ALBSource{meta: elbMeta, line: &LineSlice{}, format: opts.ALBFormat},
+			&KCCSource{},
 		},
 		s3Client: s3Client,
 		logger:   logger,

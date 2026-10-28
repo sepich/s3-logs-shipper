@@ -21,7 +21,7 @@ import (
 type Options struct {
 	BucketName   string
 	WaitInterval time.Duration
-	Format       string
+	ALBFormat    string
 	LokiURL      string
 	LokiUser     string
 	LokiPassword string
@@ -38,7 +38,7 @@ func main() {
 	pflag.StringVarP(&opts.LokiURL, "loki-url", "H", "", "URL to Loki API (required)")
 	pflag.StringVarP(&opts.LokiUser, "loki-user", "u", "", "User to use for Loki authentication")
 	var logLevel = pflag.StringP("log-level", "", "info", "Log level (info, debug)")
-	pflag.StringVarP(&opts.Format, "format", "o", "raw", "Format to parse and ship log lines as (logfmt, json, raw)")
+	pflag.StringVarP(&opts.ALBFormat, "alb-format", "o", "raw", "Format to parse and ship ALB log lines as (logfmt, json, raw)")
 	var labels = pflag.StringArrayP("label", "l", []string{}, "Label to add to all Loki streams, overrides source labels, empty value removes the label, can be specified multiple times (key=value)")
 	var roles = pflag.StringArrayP("role-arn", "a", []string{}, "ARN of the IAM role to assume to access ALB tags, can be specified multiple times")
 	pflag.IntVarP(&opts.Workers, "workers", "n", 4, "Number of workers to run")
